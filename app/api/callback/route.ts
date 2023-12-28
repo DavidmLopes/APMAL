@@ -35,7 +35,19 @@ export async function GET(request: NextRequest) {
             return { access_token: data.access_token }
         })
 
+    const { name } = await fetch('https://api.myanimelist.net/v2/users/@me', {
+        headers: {
+            Authorization: `Bearer ${access_token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            console.log(data)
+            return { name: data.name }
+        })
+
     cookies().set('access_token', access_token)
+    cookies().set('name', name)
 
     redirect('/')
 }

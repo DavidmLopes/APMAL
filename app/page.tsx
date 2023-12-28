@@ -11,12 +11,12 @@ export default function Home() {
             {accessToken === '' ? (
                 <Link
                     href={'/authorize'}
-                    className="bg-highlights hover:bg-highlights-h inline-block rounded-lg px-6 py-2 text-center font-medium"
+                    className="inline-block rounded-lg bg-highlights px-6 py-2 text-center font-medium hover:bg-highlights-h"
                 >
-                    Authorize
+                    Login with MAL
                 </Link>
             ) : (
-                <Logout className="bg-highlights hover:bg-highlights-h inline-block rounded-lg px-6 py-2 text-center font-medium" />
+                <Logout className="inline-block rounded-lg bg-highlights px-6 py-2 text-center font-medium hover:bg-highlights-h" />
             )}
         </div>
     )

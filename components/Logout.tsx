@@ -6,6 +6,7 @@ export default function Logout({ className }: { className?: string }) {
         'use server'
 
         cookies().delete('access_token')
+        cookies().delete('name')
         redirect('/')
     }
 
