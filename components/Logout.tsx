@@ -5,8 +5,7 @@ export default function Logout({ className }: { className?: string }) {
     async function logoutAction() {
         'use server'
 
-        cookies().delete('access_token')
-        cookies().delete('name')
+        cookies().delete('userId')
         redirect('/')
     }
 
