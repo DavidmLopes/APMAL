@@ -18,6 +18,9 @@ export async function createUser(user: Omit<User, 'id'>) {
 }
 
 export async function getUser(id: string) {
+    if (!id) {
+        return null
+    }
     try {
         return await prisma.user.findUnique({
             where: { id: id },
