@@ -1,60 +1,60 @@
-import { getAnimes } from '@/lib/ap'
-import { getAnime } from '@/lib/mal'
+'use client'
+
 import { Input } from './ui/input'
 import { Button } from './ui/button'
+import { Anime, getAnimes } from './scraperAction'
+import { useState } from 'react'
+import Image from 'next/image'
+import { Card, CardContent, CardFooter, CardTitle } from './ui/card'
+import { AspectRatio } from './ui/aspect-ratio'
 
-export default async function Scraper() {
+export default function Scraper() {
+    const [animes, setAnimes] = useState<Array<Anime>>([])
+
     async function scraperAction(data: FormData) {
-        'use server'
-
         const username = data.get('username')
         if (!username || typeof username !== 'string') return
 
         const animes = await getAnimes(username)
 
-        const animesData = await Promise.all(
-            animes.map(
-                async ({ title, alternative_titles, year, total_eps }) => {
-                    const anime = await getAnime(
-                        title,
-                        alternative_titles,
-                        year,
-                        total_eps,
-                    )
-
-                    return { ap: title, mal: anime }
-                },
-            ),
-        )
-
-        const notfounds = animesData.filter(
-            (anime) => anime.mal.info === 'NOT FOUND',
-        )
-
-        const errors = animesData.filter((anime) => anime.mal.info === 'ERROR')
-
-        const extras = animesData.filter(
-            (anime) => anime.mal.info === 'FOUND WITH EXTRA PROPS',
-        )
-
-        const extras2 = animesData.filter(
-            (anime) => anime.mal.info === 'FOUND WITHOUT API',
-        )
-
-        console.log('TOTAL: ' + animesData.length)
-        console.log('FOUND WITH EXTRA PROPS: ' + extras.length)
-        console.log('FOUND WITHOUT API: ' + extras2.length)
-        console.log('NOT FOUND: ' + notfounds.length)
-        console.log('ERROR: ' + errors.length)
+        setAnimes(animes)
     }
 
     return (
-        <form
-            action={scraperAction}
-            className="flex w-full items-center space-x-2"
-        >
-            <Input type="text" name="username" />
-            <Button type="submit">Search</Button>
-        </form>
+        <div>
+            <form
+                action={scraperAction}
+                className="flex w-full items-center space-x-2"
+            >
+                <Input
+                    type="text"
+                    name="username"
+                    placeholder="AnimePlanet Username"
+                />
+                <Button type="submit">Search</Button>
+            </form>
+            <div className="mx-auto grid max-w-screen-xl grid-cols-6 gap-2 p-2">
+                {animes.map((anime) => (
+                    <Card key={anime.ap.title}>
+                        <CardContent className="pt-3">
+                            <AspectRatio ratio={4 / 6}>
+                                <Image
+                                    src={anime.ap.image}
+                                    alt={'Image of ' + anime.ap.title}
+                                    layout="fill"
+                                    style={{ objectFit: 'cover' }}
+                                    className="rounded-md"
+                                />
+                            </AspectRatio>
+                        </CardContent>
+                        <CardFooter>
+                            <div className="w-full text-center">
+                                {anime.ap.title}
+                            </div>
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
     )
 }

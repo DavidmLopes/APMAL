@@ -13,13 +13,18 @@ type MALNode = {
     }
 }
 
+export type AnimeMAL = {
+    title: string
+    info: string
+}
+
 export async function getAnime(
     name: string,
     alternative_titles: string[] = [],
     year: string = '0',
     total_eps: string = '0',
-) {
-    const { anime, info } = await fetch(
+): Promise<AnimeMAL> {
+    return await fetch(
         'https://api.myanimelist.net/v2/anime?q=' +
             name.slice(0, 50) +
             '&limit=20&fields=alternative_titles,start_season,num_episodes',
@@ -58,7 +63,7 @@ export async function getAnime(
             )
 
             if (anime) {
-                return { anime: anime.node.title, info: 'FOUND' }
+                return { title: anime.node.title, info: 'FOUND' }
             }
 
             anime = data.data.find(
@@ -72,7 +77,7 @@ export async function getAnime(
 
             if (anime) {
                 return {
-                    anime: anime.node.title,
+                    title: anime.node.title,
                     info: 'FOUND WITH EXTRA PROPS',
                 }
             }
@@ -100,18 +105,16 @@ export async function getAnime(
 
             if (animeElem) {
                 return {
-                    anime: animeElem.name,
+                    title: animeElem.name,
                     info: 'FOUND WITHOUT API',
                 }
             }
 
-            return { anime: '', info: 'NOT FOUND' }
+            return { title: '', info: 'NOT FOUND' }
         })
         .catch((err) => {
-            return { anime: '', info: 'ERROR' }
+            return { title: '', info: 'ERROR' }
         })
-
-    return { anime, info }
 }
 
 function simpleTitle(title: string) {

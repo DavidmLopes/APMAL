@@ -1,12 +1,15 @@
 import * as cheerio from 'cheerio'
 
+export type AnimeAP = {
+    title: string
+    alternative_titles: string[]
+    year: string
+    total_eps: string
+    image: string
+}
+
 export async function getAnimes(apUsername: string, next: string = '') {
-    const animes: Array<{
-        title: string
-        alternative_titles: string[]
-        year: string
-        total_eps: string
-    }> = []
+    const animes: Array<AnimeAP> = []
 
     const html = await fetch(
         'https://www.anime-planet.com/users/' +
@@ -21,6 +24,7 @@ export async function getAnimes(apUsername: string, next: string = '') {
         .find('[data-type=anime]')
         .each((i, el) => {
             const title = $(el).find('h3').text()
+            const image = $(el).find('img').attr('data-src') ?? ''
 
             const info = $(el).find('.tooltip').attr('title')
             let year = ''
@@ -41,7 +45,7 @@ export async function getAnimes(apUsername: string, next: string = '') {
                 }
             }
 
-            animes.push({ title, alternative_titles, year, total_eps })
+            animes.push({ title, alternative_titles, year, total_eps, image })
         })
 
     if ($('.next a').length > 0) {
