@@ -1,11 +1,16 @@
 import { getAnimes } from '@/lib/ap'
 import { getAnime } from '@/lib/mal'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
 
 export default async function Scraper() {
-    async function scraperAction() {
+    async function scraperAction(data: FormData) {
         'use server'
 
-        const animes = await getAnimes('Master15')
+        const username = data.get('username')
+        if (!username || typeof username !== 'string') return
+
+        const animes = await getAnimes(username)
 
         const animesData = await Promise.all(
             animes.map(
@@ -44,8 +49,12 @@ export default async function Scraper() {
     }
 
     return (
-        <form action={scraperAction}>
-            <button type="submit">Scraper</button>
+        <form
+            action={scraperAction}
+            className="flex w-full items-center space-x-2"
+        >
+            <Input type="text" name="username" />
+            <Button type="submit">Search</Button>
         </form>
     )
 }
