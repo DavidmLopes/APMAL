@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio'
 export type AnimeAP = {
     title: string
     alternative_titles: string[]
+    type: string
     year: string
     total_eps: string
     image: string
@@ -16,6 +17,9 @@ export async function getAnimes(apUsername: string, next: string = '') {
             apUsername +
             '/anime?sort=title' +
             next,
+        {
+            cache: 'no-cache',
+        },
     ).then((res) => res.text())
 
     const $ = cheerio.load(html)
@@ -30,9 +34,11 @@ export async function getAnimes(apUsername: string, next: string = '') {
             let year = ''
             const alternative_titles = [] as string[]
             const total_eps = $(el).attr('data-total-episodes') ?? ''
+            let type = ''
             if (info) {
                 const $$ = cheerio.load(info)
                 year = $$('.iconYear').text().substring(0, 4)
+                type = $$('.type').text().split(' (')[0]
                 const alternative_title = $$('h6').text().substring(11)
                 if (alternative_title != '') {
                     if (alternative_title.charAt(0) === ' ') {
@@ -45,7 +51,14 @@ export async function getAnimes(apUsername: string, next: string = '') {
                 }
             }
 
-            animes.push({ title, alternative_titles, year, total_eps, image })
+            animes.push({
+                title,
+                alternative_titles,
+                type,
+                year,
+                total_eps,
+                image,
+            })
         })
 
     if ($('.next a').length > 0) {

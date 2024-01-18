@@ -2,15 +2,22 @@
 
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { Anime, getAnimes } from './scraperAction'
-import { useState } from 'react'
-import Image from 'next/image'
-import { Card, CardContent, CardFooter, CardTitle } from './ui/card'
-import { AspectRatio } from './ui/aspect-ratio'
+import { getAnimes } from './scraperAction'
+import { AnimeAP } from '@/lib/ap'
+import { AnimeMAL } from '@/lib/mal'
 
-export default function Scraper() {
-    const [animes, setAnimes] = useState<Array<Anime>>([])
+export type Anime = {
+    ap: AnimeAP
+    mal: AnimeMAL | undefined
+}
 
+export default function Scraper({
+    setAnimes,
+    available,
+}: {
+    setAnimes: (animes: Array<Anime>) => void
+    available: boolean
+}) {
     async function scraperAction(data: FormData) {
         const username = data.get('username')
         if (!username || typeof username !== 'string') return
@@ -31,30 +38,10 @@ export default function Scraper() {
                     name="username"
                     placeholder="AnimePlanet Username"
                 />
-                <Button type="submit">Search</Button>
+                <Button type="submit" disabled={!available}>
+                    Search
+                </Button>
             </form>
-            <div className="mx-auto grid max-w-screen-xl grid-cols-6 gap-2 p-2">
-                {animes.map((anime) => (
-                    <Card key={anime.ap.title}>
-                        <CardContent className="pt-3">
-                            <AspectRatio ratio={4 / 6}>
-                                <Image
-                                    src={anime.ap.image}
-                                    alt={'Image of ' + anime.ap.title}
-                                    layout="fill"
-                                    style={{ objectFit: 'cover' }}
-                                    className="rounded-md"
-                                />
-                            </AspectRatio>
-                        </CardContent>
-                        <CardFooter>
-                            <div className="w-full text-center">
-                                {anime.ap.title}
-                            </div>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
         </div>
     )
 }

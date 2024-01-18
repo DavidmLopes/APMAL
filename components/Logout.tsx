@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Button } from './ui/button'
 
 export default function Logout({ className }: { className?: string }) {
     async function logoutAction() {
@@ -11,9 +12,9 @@ export default function Logout({ className }: { className?: string }) {
 
     return (
         <form action={logoutAction}>
-            <button type="submit" className={className}>
+            <Button type="submit" className={className}>
                 Logout
-            </button>
+            </Button>
         </form>
     )
 }
