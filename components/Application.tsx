@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Scraper, { Anime } from './Scraper'
-import { AnimeMAL, AnimeStatusMAL } from '@/lib/mal'
+import { AnimeMAL, AnimeStatusMAL, isSameStatus } from '@/lib/mal'
 import Animes from './Animes'
 
 export default function Application({ available }: { available: boolean }) {
@@ -25,8 +25,15 @@ export default function Application({ available }: { available: boolean }) {
                 animes.filter(
                     (anime) =>
                         anime.mal != undefined &&
+                        anime.ap.status != undefined &&
                         userAnimes.find(
-                            (userAnime) => userAnime.title === anime.mal?.title,
+                            (userAnime) =>
+                                userAnime.title === anime.mal?.title &&
+                                (anime.ap.status === undefined ||
+                                    isSameStatus(
+                                        anime.ap.status,
+                                        userAnime.status,
+                                    )),
                         ) === undefined,
                 ),
             )

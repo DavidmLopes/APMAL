@@ -5,6 +5,8 @@ export type AnimeAP = {
     alternative_titles: string[]
     type: string
     year: string
+    status: AnimeStatus | undefined
+    eps_watched: string
     total_eps: string
     image: string
 }
@@ -34,6 +36,8 @@ export async function getAnimes(apUsername: string, next: string = '') {
             let year = ''
             const alternative_titles = [] as string[]
             const total_eps = $(el).attr('data-total-episodes') ?? ''
+            let eps_watched = ''
+            let status: AnimeStatus | undefined = undefined
             let type = ''
             if (info) {
                 const $$ = cheerio.load(info)
@@ -49,6 +53,15 @@ export async function getAnimes(apUsername: string, next: string = '') {
                         alternative_titles.push(alternative_title)
                     }
                 }
+                status = toStatus(
+                    $$('.myListBar').find('span').attr('class') ?? '',
+                )
+                eps_watched = $$('.myListBar').text().split(' - ')[1] ?? ''
+                if (eps_watched != '' && eps_watched.includes('/')) {
+                    eps_watched = eps_watched.split('/')[0]
+                } else {
+                    eps_watched = ''
+                }
             }
 
             animes.push({
@@ -56,6 +69,8 @@ export async function getAnimes(apUsername: string, next: string = '') {
                 alternative_titles,
                 type,
                 year,
+                status,
+                eps_watched,
                 total_eps,
                 image,
             })
@@ -70,4 +85,29 @@ export async function getAnimes(apUsername: string, next: string = '') {
     }
 
     return animes
+}
+
+export enum AnimeStatus {
+    WATCHED = 'Watched',
+    WATCHING = 'Watching',
+    DROPPED = 'Dropped',
+    WANT_TO_WATCH = 'Want to Watch',
+    STALLED = 'Stalled',
+}
+
+function toStatus(text: string): AnimeStatus | undefined {
+    switch (text) {
+        case 'status1':
+            return AnimeStatus.WATCHED
+        case 'status2':
+            return AnimeStatus.WATCHING
+        case 'status3':
+            return AnimeStatus.DROPPED
+        case 'status4':
+            return AnimeStatus.WANT_TO_WATCH
+        case 'status5':
+            return AnimeStatus.STALLED
+        default:
+            return undefined
+    }
 }

@@ -1,4 +1,4 @@
-import { AnimeAP } from './ap'
+import { AnimeAP, AnimeStatus } from './ap'
 
 type MALNode = {
     node: {
@@ -22,6 +22,7 @@ export type AnimeMAL = {
     title: string
 }
 
+// TODO: Maybe refactor this to use enums
 function typeAPtoMAL(apType: string) {
     const types = [] as string[]
 
@@ -250,4 +251,19 @@ export async function getUserAnimes(
 
             return animes
         })
+}
+
+export function isSameStatus(apStatus: AnimeStatus, malStatus: string) {
+    switch (apStatus) {
+        case AnimeStatus.WATCHING:
+            return malStatus === 'watching'
+        case AnimeStatus.WATCHED:
+            return malStatus === 'completed'
+        case AnimeStatus.STALLED:
+            return malStatus === 'on_hold'
+        case AnimeStatus.DROPPED:
+            return malStatus === 'dropped'
+        case AnimeStatus.WANT_TO_WATCH:
+            return malStatus === 'plan_to_watch'
+    }
 }

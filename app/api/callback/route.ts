@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     )
         .then((res) => res.json())
         .then((data) => {
-            console.log(data)
             return { name: data.name, picture: data.picture }
         })
 
