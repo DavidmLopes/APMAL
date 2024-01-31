@@ -1,5 +1,6 @@
 import { Anime } from '@/components/Scraper'
 import { AnimeAP, AnimeStatus } from './ap'
+import { createAnime, getAnimeByAP } from './anime'
 
 type MALNode = {
     node: {
@@ -64,7 +65,17 @@ function typeAPtoMAL(apType: string) {
 export async function getAnime(
     apAnime: AnimeAP,
 ): Promise<AnimeMAL | undefined> {
-    return await fetch(
+    const animeDb = await getAnimeByAP(apAnime.id)
+
+    if (animeDb) {
+        return {
+            id: animeDb.mal,
+            title: '',
+            image: '',
+        }
+    }
+
+    const anime = await fetch(
         'https://api.myanimelist.net/v2/anime?q=' +
             apAnime.title.slice(0, 50) +
             '&limit=20&fields=alternative_titles,start_season,num_episodes,media_type',
@@ -191,6 +202,12 @@ export async function getAnime(
             )
             return undefined
         })
+
+    if (anime != undefined) {
+        await createAnime(apAnime.id, anime.id)
+    }
+
+    return anime
 }
 
 function simpleTitle(title: string) {

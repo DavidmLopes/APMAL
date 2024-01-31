@@ -27,6 +27,6 @@ export async function getUser(id: string) {
         })
     } catch (error) {
         console.log(error)
-        throw new Error('Error creating user')
+        throw new Error('Error getting user')
     }
 }

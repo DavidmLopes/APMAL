@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 
 export type AnimeAP = {
+    id: number
     title: string
     alternative_titles: string[]
     type: string
@@ -29,6 +30,10 @@ export async function getAnimes(apUsername: string, next: string = '') {
     $('.cardDeck')
         .find('[data-type=anime]')
         .each((i, el) => {
+            const id = Number($(el).attr('data-id') ?? 0)
+            if (id === 0) {
+                return
+            }
             const title = $(el).find('h3').text()
             const image = $(el).find('img').attr('data-src') ?? ''
 
@@ -69,6 +74,7 @@ export async function getAnimes(apUsername: string, next: string = '') {
             }
 
             animes.push({
+                id,
                 title,
                 alternative_titles,
                 type,

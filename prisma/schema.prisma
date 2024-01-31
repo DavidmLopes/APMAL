@@ -17,3 +17,9 @@ model User {
   access_token String
   refresh_token String
 }
+
+model Anime {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  ap Int @unique
+  mal Int @unique
+}
