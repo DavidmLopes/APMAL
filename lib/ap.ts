@@ -5,7 +5,7 @@ export type AnimeAP = {
     alternative_titles: string[]
     type: string
     year: string
-    status: AnimeStatus | undefined
+    status: AnimeStatus
     eps_watched: string
     total_eps: string
     image: string
@@ -62,6 +62,10 @@ export async function getAnimes(apUsername: string, next: string = '') {
                 } else {
                     eps_watched = ''
                 }
+            }
+
+            if (status === undefined) {
+                return
             }
 
             animes.push({

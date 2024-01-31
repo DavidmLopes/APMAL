@@ -309,7 +309,7 @@ export async function updateAnimeStatus(
     animes: Array<Anime>,
 ): Promise<boolean> {
     const promises = animes.map((anime) => {
-        if (anime.mal === undefined || anime.ap.status === undefined) {
+        if (anime.mal === undefined) {
             return false
         }
 

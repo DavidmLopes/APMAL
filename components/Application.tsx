@@ -30,11 +30,13 @@ export default function Application({ available }: { available: boolean }) {
                         userAnimes.find(
                             (userAnime) =>
                                 userAnime.title === anime.mal?.title &&
-                                (anime.ap.status === undefined ||
-                                    isSameStatus(
-                                        anime.ap.status,
-                                        userAnime.status,
-                                    )),
+                                isSameStatus(
+                                    anime.ap.status,
+                                    userAnime.status,
+                                ) &&
+                                (anime.ap.eps_watched === '' ||
+                                    Number(anime.ap.eps_watched) ===
+                                        userAnime.num_episodes_watched),
                         ) === undefined,
                 ),
             )
