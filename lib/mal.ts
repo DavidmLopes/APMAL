@@ -1,3 +1,4 @@
+import { Anime } from '@/components/Scraper'
 import { AnimeAP, AnimeStatus } from './ap'
 
 type MALNode = {
@@ -265,17 +266,94 @@ export async function getUserAnimes(
         })
 }
 
+enum AnimeStatusValueMAL {
+    WATCHING = 'watching',
+    COMPLETED = 'completed',
+    ON_HOLD = 'on_hold',
+    DROPPED = 'dropped',
+    PLAN_TO_WATCH = 'plan_to_watch',
+}
+
 export function isSameStatus(apStatus: AnimeStatus, malStatus: string) {
     switch (apStatus) {
         case AnimeStatus.WATCHING:
-            return malStatus === 'watching'
+            return malStatus === AnimeStatusValueMAL.WATCHING
         case AnimeStatus.WATCHED:
-            return malStatus === 'completed'
+            return malStatus === AnimeStatusValueMAL.COMPLETED
         case AnimeStatus.STALLED:
-            return malStatus === 'on_hold'
+            return malStatus === AnimeStatusValueMAL.ON_HOLD
         case AnimeStatus.DROPPED:
-            return malStatus === 'dropped'
+            return malStatus === AnimeStatusValueMAL.DROPPED
         case AnimeStatus.WANT_TO_WATCH:
-            return malStatus === 'plan_to_watch'
+            return malStatus === AnimeStatusValueMAL.PLAN_TO_WATCH
     }
+}
+
+export function toStatusMAL(apStatus: AnimeStatus) {
+    switch (apStatus) {
+        case AnimeStatus.WATCHING:
+            return AnimeStatusValueMAL.WATCHING
+        case AnimeStatus.WATCHED:
+            return AnimeStatusValueMAL.COMPLETED
+        case AnimeStatus.STALLED:
+            return AnimeStatusValueMAL.ON_HOLD
+        case AnimeStatus.DROPPED:
+            return AnimeStatusValueMAL.DROPPED
+        case AnimeStatus.WANT_TO_WATCH:
+            return AnimeStatusValueMAL.PLAN_TO_WATCH
+    }
+}
+
+export async function updateAnimeStatus(
+    access_token: string,
+    animes: Array<Anime>,
+): Promise<boolean> {
+    const promises = animes.map((anime) => {
+        if (anime.mal === undefined || anime.ap.status === undefined) {
+            return false
+        }
+
+        const statusChanges = new URLSearchParams({
+            status: toStatusMAL(anime.ap.status),
+        })
+
+        if (anime.ap.status === AnimeStatus.WATCHED) {
+            statusChanges.append('num_watched_episodes', '9999')
+        }
+
+        if (anime.ap.status != AnimeStatus.WANT_TO_WATCH) {
+            statusChanges.append(
+                'num_watched_episodes',
+                anime.ap.eps_watched.toString(),
+            )
+        }
+
+        return fetch(
+            'https://api.myanimelist.net/v2/anime/' +
+                anime.mal.id +
+                '/my_list_status',
+            {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: statusChanges,
+            },
+        )
+            .then((res) => {
+                return res.status === 200
+            })
+            .catch((err) => {
+                console.log(
+                    'Error in updateAnimeStatus with error ' + err + ' and ',
+                    anime,
+                )
+                return false
+            })
+    })
+
+    return await Promise.all(promises).then((results) => {
+        return results.every((result) => result)
+    })
 }
