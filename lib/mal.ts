@@ -14,12 +14,16 @@ type MALNode = {
             season: string
         }
         num_episodes: number
+        main_picture: {
+            medium: string
+        }
     }
 }
 
 export type AnimeMAL = {
     id: number
     title: string
+    image: string
 }
 
 // TODO: Maybe refactor this to use enums
@@ -111,6 +115,7 @@ export async function getAnime(
                 return {
                     id: anime.node.id,
                     title: anime.node.title,
+                    image: anime.node.main_picture.medium,
                 }
             }
 
@@ -123,24 +128,28 @@ export async function getAnime(
                     return res.json()
                 })
                 .then((data) => {
-                    const animeElem: { id: number; name: string } =
-                        data.categories[0].items.find(
-                            (element: {
-                                id: number
-                                name: string
-                                payload: {
-                                    start_year: number
-                                    media_type: string
-                                }
-                            }) =>
-                                (simpleTitle(element.name) === animeName ||
-                                    animeAltTitles.includes(
-                                        simpleTitle(element.name),
-                                    )) &&
-                                typeAPtoMAL(apAnime.type).includes(
-                                    element.payload.media_type.toLowerCase(),
-                                ),
-                        )
+                    const animeElem: {
+                        id: number
+                        name: string
+                        thumbnail_url: string
+                    } = data.categories[0].items.find(
+                        (element: {
+                            id: number
+                            name: string
+                            thumbnail_url: string
+                            payload: {
+                                start_year: number
+                                media_type: string
+                            }
+                        }) =>
+                            (simpleTitle(element.name) === animeName ||
+                                animeAltTitles.includes(
+                                    simpleTitle(element.name),
+                                )) &&
+                            typeAPtoMAL(apAnime.type).includes(
+                                element.payload.media_type.toLowerCase(),
+                            ),
+                    )
 
                     return animeElem
                 })
@@ -149,6 +158,7 @@ export async function getAnime(
                 return {
                     id: animeElem.id,
                     title: animeElem.name,
+                    image: animeElem.thumbnail_url,
                 }
             }
 
@@ -168,6 +178,7 @@ export async function getAnime(
                 return {
                     id: anime.node.id,
                     title: anime.node.title,
+                    image: anime.node.main_picture.medium,
                 }
             }
 
@@ -230,6 +241,7 @@ export async function getUserAnimes(
                     return {
                         id: anime.node.id,
                         title: anime.node.title,
+                        image: anime.node.main_picture.medium,
                         status: anime.list_status.status,
                         num_episodes_watched:
                             anime.list_status.num_episodes_watched,
