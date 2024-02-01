@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const baseUrl =
         process.env.NEXT_PUBLIC_VERCEL_URL !== undefined
-            ? 'https://' + process.env.NEXT_PUBLIC_VERCEL_URL
+            ? 'https://apmal.vercel.app/'
             : 'http://localhost:3000'
 
     const form = new FormData()
