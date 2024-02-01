@@ -39,7 +39,7 @@ function statusToColor(status: AnimeStatus | undefined) {
 
 export default function Animes({ animes }: { animes: Array<Anime> }) {
     return (
-        <div className="mx-auto grid max-w-screen-xl grid-cols-6 gap-2 p-2">
+        <div className="mx-auto grid max-w-screen-xl grid-cols-2 gap-2 p-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {animes.map((anime) => (
                 <Card
                     key={anime.ap.title}
@@ -69,7 +69,9 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                         <div className="mb-2 text-center">{anime.ap.title}</div>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button className="w-full">More Info</Button>
+                                <Button className="w-full" variant="outline">
+                                    More Info
+                                </Button>
                             </DialogTrigger>
                             <DialogContent className="">
                                 <DialogHeader>
@@ -78,9 +80,9 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                         More details about differences
                                     </DialogDescription>
                                 </DialogHeader>
-                                <div className="grid grid-cols-3">
-                                    <div>
-                                        <div className="font-bold">
+                                <div className="grid grid-cols-5">
+                                    <div className="col-span-2">
+                                        <div className="mb-2 font-bold">
                                             AnimePlanet
                                         </div>
                                         <AspectRatio ratio={4 / 6}>
@@ -95,7 +97,9 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                                 sizes="100%" //Need to optimze this
                                             />
                                         </AspectRatio>
-                                        <div>Id: {anime.ap.id}</div>
+                                        <div className="mt-2">
+                                            Id: {anime.ap.id}
+                                        </div>
                                         <div>Name: {anime.ap.title}</div>
                                         <div>Status: {anime.ap.status}</div>
                                         {anime.ap.eps_watched != undefined &&
@@ -107,7 +111,7 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                     </div>
                                     <div className="text-center">{'<- ->'}</div>
                                     {anime.mal != undefined && (
-                                        <div>
+                                        <div className="col-span-2">
                                             <div className="font-bold">
                                                 MyAnimeList
                                             </div>

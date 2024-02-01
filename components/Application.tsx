@@ -42,20 +42,26 @@ export default function Application({ available }: { available: boolean }) {
             )
         }
 
-        if (animes.length === 0) return
+        if (animes.length === 0) {
+            setDifAnimes([])
+            return
+        }
 
         compareAnimes()
     }, [animes])
 
     async function updateAnimes() {
-        const abc = await fetch('/api/mal/updateAnimes', {
+        const done = await fetch('/api/mal/updateAnimes', {
             method: 'PUT',
             credentials: 'include',
             cache: 'no-cache',
             body: JSON.stringify(difAnimes),
         }).then((res) => res.json())
 
-        console.log('Done: ', abc)
+        setDifAnimes([])
+
+        console.log('Done: ' + done)
+        // TODO: Show user if all got right
     }
 
     return (
@@ -63,13 +69,19 @@ export default function Application({ available }: { available: boolean }) {
             <Scraper setAnimes={setAnimes} available={available} />
             {animes.length > 0 && (
                 <>
-                    <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
-                        Missing on MAL
-                    </h3>
-                    <Animes animes={difAnimes} />
-                    <Button className="w-full" onClick={updateAnimes}>
-                        Update
-                    </Button>
+                    {difAnimes.length > 0 && (
+                        <>
+                            <div className="flex items-center">
+                                <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
+                                    Missing on MAL
+                                </h3>
+                                <Button className="" onClick={updateAnimes}>
+                                    Update MAL
+                                </Button>
+                            </div>
+                            <Animes animes={difAnimes} />
+                        </>
+                    )}
                     <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                         NotFound
                     </h3>
