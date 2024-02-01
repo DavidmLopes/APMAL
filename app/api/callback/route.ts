@@ -6,6 +6,11 @@ import { createUser } from '@/lib/users'
 export async function GET(request: NextRequest) {
     const code = request.nextUrl.searchParams.get('code') ?? ''
 
+    const baseUrl =
+        process.env.VERCEL_URL !== undefined
+            ? 'https://' + process.env.VERCEL_URL
+            : 'http://localhost:3000'
+
     const form = new FormData()
     form.append('code', code ? code : '')
     form.append(
@@ -16,7 +21,7 @@ export async function GET(request: NextRequest) {
         'client_secret',
         process.env.MAL_CLIENT_SECRET ? process.env.MAL_CLIENT_SECRET : '',
     )
-    form.append('redirect_uri', 'http://localhost:3000/api/callback') // TODO: Maybe not good to hardcode this
+    form.append('redirect_uri', baseUrl + '/api/callback')
     form.append('grant_type', 'authorization_code')
     form.append(
         'code_verifier',
