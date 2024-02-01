@@ -2,7 +2,7 @@ import { getUserAnimes } from '@/lib/mal'
 import { getUser } from '@/lib/users'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const maxDuration = 5000
+export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
     const userId = request.cookies.get('userId')?.value
