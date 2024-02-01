@@ -4,8 +4,8 @@ export default function Authorize() {
     const code_challenge = process.env.CODE_VERIFIER
 
     const baseUrl =
-        process.env.VERCEL_URL !== undefined
-            ? 'https://' + process.env.VERCEL_URL
+        process.env.NEXT_PUBLIC_VERCEL_URL !== undefined
+            ? 'https://' + process.env.NEXT_PUBLIC_VERCEL_URL
             : 'http://localhost:3000'
 
     redirect(
