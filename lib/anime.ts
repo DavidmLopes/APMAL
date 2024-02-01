@@ -2,6 +2,9 @@ import type { Anime } from '@prisma/client'
 import prisma from './prisma'
 
 export async function createAnime(apId: number, malId: number) {
+    console.log(
+        'Creating anime with apId: ' + apId + ' and malId: ' + malId + '.',
+    )
     try {
         return await prisma.anime.create({
             data: {

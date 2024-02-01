@@ -2,24 +2,26 @@ import { Anime } from '@/components/Scraper'
 import { AnimeAP, AnimeStatus } from './ap'
 import { createAnime, getAnimeByAP } from './anime'
 
-type MALNode = {
-    node: {
-        id: number
-        title: string
-        alternative_titles: {
-            synonyms: Array<string>
-            en: string
-        }
-        media_type: string
-        start_season: {
-            year: number
-            season: string
-        }
-        num_episodes: number
-        main_picture: {
-            medium: string
-        }
+type MALAnimeDetails = {
+    id: number
+    title: string
+    alternative_titles: {
+        synonyms: Array<string>
+        en: string
     }
+    media_type: string
+    start_season: {
+        year: number
+        season: string
+    }
+    num_episodes: number
+    main_picture: {
+        medium: string
+    }
+}
+
+type MALNode = {
+    node: MALAnimeDetails
 }
 
 export type AnimeMAL = {
@@ -68,10 +70,22 @@ export async function getAnime(
     const animeDb = await getAnimeByAP(apAnime.id)
 
     if (animeDb) {
+        const anime: MALAnimeDetails = await fetch(
+            'https://api.myanimelist.net/v2/anime/' + animeDb.mal,
+            {
+                method: 'GET',
+                headers: {
+                    'X-MAL-CLIENT-ID': `${process.env.MAL_CLIENT_ID}`,
+                },
+            },
+        ).then((res) => {
+            return res.json()
+        })
+
         return {
             id: animeDb.mal,
-            title: '',
-            image: '',
+            title: anime.title,
+            image: anime.main_picture.medium,
         }
     }
 

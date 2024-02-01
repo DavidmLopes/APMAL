@@ -1,9 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 
-if (!process.env.DATABASE_URL) {
-    throw new Error('Invalid/Missing environment variable: "DATABASE_URL"')
-}
-
 declare global {
     // eslint-disable-next-line no-var
     var prisma: PrismaClient | undefined

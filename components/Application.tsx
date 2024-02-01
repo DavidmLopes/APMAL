@@ -29,7 +29,7 @@ export default function Application({ available }: { available: boolean }) {
                         anime.ap.status != undefined &&
                         userAnimes.find(
                             (userAnime) =>
-                                userAnime.title === anime.mal?.title &&
+                                userAnime.id === anime.mal?.id &&
                                 isSameStatus(
                                     anime.ap.status,
                                     userAnime.status,

@@ -95,6 +95,7 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                                 sizes="100%" //Need to optimze this
                                             />
                                         </AspectRatio>
+                                        <div>Id: {anime.ap.id}</div>
                                         <div>Name: {anime.ap.title}</div>
                                         <div>Status: {anime.ap.status}</div>
                                         {anime.ap.eps_watched != undefined &&

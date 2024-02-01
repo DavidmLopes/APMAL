@@ -9,7 +9,12 @@ export async function createUser(user: Omit<User, 'id'>) {
                 access_token: user.access_token,
                 refresh_token: user.refresh_token,
             },
-            create: user,
+            create: {
+                name: user.name,
+                picture: user.picture,
+                access_token: user.access_token,
+                refresh_token: user.refresh_token,
+            },
         })
     } catch (error) {
         console.log(error)
