@@ -5,7 +5,7 @@ export default function Authorize() {
 
     const baseUrl =
         process.env.NEXT_PUBLIC_VERCEL_URL !== undefined
-            ? 'https://apmal.vercel.app/'
+            ? 'https://apmal.vercel.app'
             : 'http://localhost:3000'
 
     redirect(
