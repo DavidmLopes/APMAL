@@ -5,8 +5,11 @@ import Scraper, { Anime } from './Scraper'
 import { AnimeMAL, AnimeStatusMAL, isSameStatus } from '@/lib/mal'
 import Animes from './Animes'
 import { Button } from './ui/button'
+import { useToast } from './ui/use-toast'
 
 export default function Application({ available }: { available: boolean }) {
+    const { toast } = useToast()
+
     const [animes, setAnimes] = useState<Array<Anime>>([])
 
     const [difAnimes, setDifAnimes] = useState<Array<Anime>>([])
@@ -51,17 +54,51 @@ export default function Application({ available }: { available: boolean }) {
     }, [animes])
 
     async function updateAnimes() {
-        const done = await fetch('/api/mal/updateAnimes', {
+        const resp = await fetch('/api/mal/updateAnimes', {
             method: 'PUT',
             credentials: 'include',
             cache: 'no-cache',
             body: JSON.stringify(difAnimes),
-        }).then((res) => res.json())
+        })
 
-        setDifAnimes([])
+        if (resp.status === 403) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Not valid user on MAL',
+                duration: 2500,
+            })
+            return
+        }
 
-        console.log('Done: ' + done)
-        // TODO: Show user if all got right
+        if (resp.status !== 200) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Internal Error',
+                duration: 2500,
+            })
+            return
+        }
+
+        const notUpdatedAnimes = (await resp.json()) as Array<Anime>
+        setDifAnimes(notUpdatedAnimes)
+
+        if (notUpdatedAnimes.length > 0) {
+            toast({
+                variant: 'alert',
+                title: 'Updated partially',
+                description: 'Updated your MAL, but not all animes',
+                duration: 2500,
+            })
+            return
+        }
+
+        toast({
+            title: 'Updated',
+            description: 'Updated your MAL',
+            duration: 2500,
+        })
     }
 
     return (

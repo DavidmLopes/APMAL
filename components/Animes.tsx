@@ -112,7 +112,7 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                     <div className="text-center">{'<- ->'}</div>
                                     {anime.mal != undefined && (
                                         <div className="col-span-2">
-                                            <div className="font-bold">
+                                            <div className="mb-2 font-bold">
                                                 MyAnimeList
                                             </div>
                                             <AspectRatio ratio={4 / 6}>
@@ -130,6 +130,9 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                                                     sizes="100%" //Need to optimze this
                                                 />
                                             </AspectRatio>
+                                            <div className="mt-2">
+                                                Id: {anime.mal.id}
+                                            </div>
                                             <div>Name: {anime.mal?.title}</div>
                                         </div>
                                     )}

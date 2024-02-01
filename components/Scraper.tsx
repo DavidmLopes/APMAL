@@ -49,6 +49,7 @@ export default function Scraper({
                     type="text"
                     name="username"
                     placeholder="AnimePlanet Username"
+                    disabled={!available || loading}
                 />
                 <Button type="submit" disabled={!available || loading}>
                     Search

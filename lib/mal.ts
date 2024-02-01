@@ -338,10 +338,10 @@ export function toStatusMAL(apStatus: AnimeStatus) {
 export async function updateAnimeStatus(
     access_token: string,
     animes: Array<Anime>,
-): Promise<boolean> {
+): Promise<Array<Anime>> {
     const promises = animes.map((anime) => {
         if (anime.mal === undefined) {
-            return false
+            return anime
         }
 
         const statusChanges = new URLSearchParams({
@@ -373,18 +373,21 @@ export async function updateAnimeStatus(
             },
         )
             .then((res) => {
-                return res.status === 200
+                if (res.status === 200) {
+                    return null
+                }
+                return anime
             })
             .catch((err) => {
                 console.log(
                     'Error in updateAnimeStatus with error ' + err + ' and ',
                     anime,
                 )
-                return false
+                return anime
             })
     })
 
     return await Promise.all(promises).then((results) => {
-        return results.every((result) => result)
+        return results.filter((result) => result != null) as Array<Anime>
     })
 }

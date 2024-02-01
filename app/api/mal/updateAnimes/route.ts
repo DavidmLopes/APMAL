@@ -17,9 +17,9 @@ export async function PUT(request: NextRequest) {
         return forbiddenResponse()
     }
 
-    const done = await updateAnimeStatus(user.access_token, animes)
+    const notUpdatedAnimes = await updateAnimeStatus(user.access_token, animes)
 
-    return NextResponse.json(done)
+    return NextResponse.json(notUpdatedAnimes)
 }
 
 function forbiddenResponse() {
