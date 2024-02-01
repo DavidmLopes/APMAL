@@ -3,6 +3,8 @@ import { updateAnimeStatus } from '@/lib/mal'
 import { getUser } from '@/lib/users'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const maxDuration = 5000
+
 export async function PUT(request: NextRequest) {
     const userId = request.cookies.get('userId')?.value
     const animes: Array<Anime> = await request.json()
