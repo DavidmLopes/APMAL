@@ -2,9 +2,9 @@
 
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { getAnimes } from './scraperAction'
+import { getAnimes, getAnimesMal } from './actions'
 import { AnimeAP } from '@/lib/ap'
-import { AnimeMAL } from '@/lib/mal'
+import { AnimeMAL, isSameStatus } from '@/lib/mal'
 import { useState } from 'react'
 
 export type Anime = {
@@ -14,9 +14,11 @@ export type Anime = {
 
 export default function Scraper({
     setAnimes,
+    setDifAnimes,
     available,
 }: {
     setAnimes: (animes: Array<Anime>) => void
+    setDifAnimes: (animes: Array<Anime>) => void
     available: boolean
 }) {
     const [loading, setLoading] = useState<boolean>(false)
@@ -30,6 +32,30 @@ export default function Scraper({
         }
 
         const animes = await getAnimes(username)
+
+        const userAnimes = await getAnimesMal()
+        if (userAnimes === undefined) {
+            // TODO: Notify user that have no permission to access MAL
+        } else {
+            setDifAnimes(
+                animes.filter(
+                    (anime) =>
+                        anime.mal != undefined &&
+                        anime.ap.status != undefined &&
+                        userAnimes.find(
+                            (userAnime) =>
+                                userAnime.id === anime.mal?.id &&
+                                isSameStatus(
+                                    anime.ap.status,
+                                    userAnime.status,
+                                ) &&
+                                (anime.ap.eps_watched === '' ||
+                                    Number(anime.ap.eps_watched) ===
+                                        userAnime.num_episodes_watched),
+                        ) === undefined,
+                ),
+            )
+        }
 
         setLoading(false)
         setAnimes(animes)

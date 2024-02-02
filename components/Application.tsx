@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Scraper, { Anime } from './Scraper'
-import { AnimeMAL, AnimeStatusMAL, isSameStatus } from '@/lib/mal'
 import Animes from './Animes'
 import { Button } from './ui/button'
 import { useToast } from './ui/use-toast'
+import { updateAnimesMAL } from './actions'
 
 export default function Application({ available }: { available: boolean }) {
     const { toast } = useToast()
@@ -14,64 +14,10 @@ export default function Application({ available }: { available: boolean }) {
 
     const [difAnimes, setDifAnimes] = useState<Array<Anime>>([])
 
-    useEffect(() => {
-        async function compareAnimes() {
-            const userAnimes: Array<AnimeMAL & AnimeStatusMAL> = await fetch(
-                '/api/mal/getAnimes',
-                {
-                    method: 'GET',
-                    credentials: 'include',
-                    cache: 'no-cache',
-                },
-            ).then((res) => res.json())
-
-            setDifAnimes(
-                animes.filter(
-                    (anime) =>
-                        anime.mal != undefined &&
-                        anime.ap.status != undefined &&
-                        userAnimes.find(
-                            (userAnime) =>
-                                userAnime.id === anime.mal?.id &&
-                                isSameStatus(
-                                    anime.ap.status,
-                                    userAnime.status,
-                                ) &&
-                                (anime.ap.eps_watched === '' ||
-                                    Number(anime.ap.eps_watched) ===
-                                        userAnime.num_episodes_watched),
-                        ) === undefined,
-                ),
-            )
-        }
-
-        if (animes.length === 0) {
-            setDifAnimes([])
-            return
-        }
-
-        compareAnimes()
-    }, [animes])
-
     async function updateAnimes() {
-        const resp = await fetch('/api/mal/updateAnimes', {
-            method: 'PUT',
-            credentials: 'include',
-            cache: 'no-cache',
-            body: JSON.stringify(difAnimes),
-        })
+        const notUpdatedAnimes = await updateAnimesMAL(difAnimes)
 
-        if (resp.status === 403) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Not valid user on MAL',
-                duration: 2500,
-            })
-            return
-        }
-
-        if (resp.status !== 200) {
+        if (notUpdatedAnimes === undefined) {
             toast({
                 variant: 'destructive',
                 title: 'Error',
@@ -81,7 +27,6 @@ export default function Application({ available }: { available: boolean }) {
             return
         }
 
-        const notUpdatedAnimes = (await resp.json()) as Array<Anime>
         setDifAnimes(notUpdatedAnimes)
 
         if (notUpdatedAnimes.length > 0) {
@@ -103,7 +48,11 @@ export default function Application({ available }: { available: boolean }) {
 
     return (
         <div>
-            <Scraper setAnimes={setAnimes} available={available} />
+            <Scraper
+                setAnimes={setAnimes}
+                setDifAnimes={setDifAnimes}
+                available={available}
+            />
             {animes.length > 0 && (
                 <>
                     {difAnimes.length > 0 && (
@@ -112,9 +61,9 @@ export default function Application({ available }: { available: boolean }) {
                                 <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                                     Missing on MAL
                                 </h3>
-                                <Button className="" onClick={updateAnimes}>
-                                    Update MAL
-                                </Button>
+                                <form action={updateAnimes}>
+                                    <Button type="submit">Update MAL</Button>
+                                </form>
                             </div>
                             <Animes animes={difAnimes} />
                         </>
