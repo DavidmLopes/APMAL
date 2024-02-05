@@ -10,14 +10,13 @@ APMAL is a web-based tool designed to synchronize anime lists between Anime-Plan
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/DavidmLopes/APMAL`
-2. Install dependencies: `npm install`
-3. Create .env file with the following variables:
+2. Create .env file with the following variables:
     - MAL_CLIENT_ID: Id of your MyAnimeList API
     - MAL_CLIENT_SECRET: Secret key of your MyAnimeList API
     - DATABASE_URL: Url of your mongodb database.
-4. Generate prisma: `npx prisma generate`
-5. Start the server: `npm run dev`
-6. Open `http://localhost:3000` in a web browser.
+3. Install dependencies: `npm install`
+4. Start the server: `npm run dev`
+5. Open `http://localhost:3000` in a web browser.
 
 ## Usage
 
