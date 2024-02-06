@@ -1,11 +1,7 @@
 'use server'
 
 import { AnimeAP, getAnimes as getAnimesAP } from '@/lib/ap'
-import {
-    getAnime as getAnimeMal,
-    getUserAnimes,
-    updateAnimeStatus,
-} from '@/lib/mal'
+import { getAnimeMAL, getUserAnimes, updateAnimeStatus } from '@/lib/mal'
 import { Anime } from './Scraper'
 import { cookies } from 'next/headers'
 import { getUser } from '@/lib/users'
@@ -15,7 +11,7 @@ export async function getAnimes(username: string): Promise<Array<Anime>> {
 
     const animesData = await Promise.all(
         animes.map(async (apAnime: AnimeAP) => {
-            const malAnime = await getAnimeMal(apAnime)
+            const malAnime = await getAnimeMAL(apAnime)
 
             return {
                 ap: apAnime,

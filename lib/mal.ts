@@ -1,6 +1,6 @@
 import { Anime } from '@/components/Scraper'
 import { AnimeAP, AnimeStatus } from './ap'
-import { createAnime, getAnimeByAP } from './anime'
+import { createAnime, getAnimeByAP, getAnimeByMAL } from './anime'
 
 type MALAnimeDetails = {
     id: number
@@ -9,6 +9,7 @@ type MALAnimeDetails = {
         synonyms: Array<string>
         en: string
     }
+    status: string
     media_type: string
     start_season: {
         year: number
@@ -30,7 +31,6 @@ export type AnimeMAL = {
     image: string
 }
 
-// TODO: Maybe refactor this to use enums
 function typeAPtoMAL(apType: string) {
     const types = [] as string[]
 
@@ -64,35 +64,22 @@ function typeAPtoMAL(apType: string) {
     return types
 }
 
-export async function getAnime(
-    apAnime: AnimeAP,
-): Promise<AnimeMAL | undefined> {
-    const animeDb = await getAnimeByAP(apAnime.id)
+async function getAnimeInfo(id: number): Promise<MALAnimeDetails> {
+    return await fetch('https://api.myanimelist.net/v2/anime/' + id, {
+        method: 'GET',
+        headers: {
+            'X-MAL-CLIENT-ID': `${process.env.MAL_CLIENT_ID}`,
+        },
+    }).then((res) => {
+        return res.json()
+    })
+}
 
-    if (animeDb) {
-        const anime: MALAnimeDetails = await fetch(
-            'https://api.myanimelist.net/v2/anime/' + animeDb.mal,
-            {
-                method: 'GET',
-                headers: {
-                    'X-MAL-CLIENT-ID': `${process.env.MAL_CLIENT_ID}`,
-                },
-            },
-        ).then((res) => {
-            return res.json()
-        })
-
-        return {
-            id: animeDb.mal,
-            title: anime.title,
-            image: anime.main_picture.medium,
-        }
-    }
-
-    const anime = await fetch(
+async function getAnimesByTitle(title: string): Promise<Array<MALNode>> {
+    return await fetch(
         'https://api.myanimelist.net/v2/anime?q=' +
-            apAnime.title.slice(0, 50) +
-            '&limit=20&fields=alternative_titles,start_season,num_episodes,media_type',
+            title.slice(0, 50) +
+            '&limit=20&fields=alternative_titles,start_season,num_episodes,media_type,status',
         {
             method: 'GET',
             headers: {
@@ -105,123 +92,109 @@ export async function getAnime(
 
             return res.json()
         })
-        .then(async (data) => {
-            const animeName = simpleTitle(apAnime.title)
-            const animeAltTitles = apAnime.alternative_titles.map((title) =>
-                simpleTitle(title),
-            )
+        .then((data) => {
+            return data.data
+        })
+}
 
-            let anime: MALNode
+function checkForMatch(animeAP: AnimeAP, animes: Array<MALNode>) {
+    const apName = simpleTitle(animeAP.title)
+    const apAltTitles = animeAP.alternative_titles.map((title) =>
+        simpleTitle(title),
+    )
 
-            anime = data.data.find(
-                (element: MALNode) =>
-                    (simpleTitle(element.node.title) === animeName ||
-                        element.node.alternative_titles.synonyms
-                            .map((synonym) => simpleTitle(synonym))
-                            .includes(animeName) ||
-                        simpleTitle(element.node.alternative_titles.en) ===
-                            animeName ||
-                        animeAltTitles.includes(
-                            simpleTitle(element.node.title),
-                        ) ||
-                        animeAltTitles.includes(
-                            simpleTitle(element.node.alternative_titles.en),
-                        ) ||
-                        animeAltTitles.some((altTitle) =>
-                            element.node.alternative_titles.synonyms
-                                .map((synonym) => simpleTitle(synonym))
-                                .includes(altTitle),
-                        )) &&
-                    typeAPtoMAL(apAnime.type).includes(
-                        element.node.media_type.toLowerCase(),
-                    ),
-            )
+    const onlyTitle = animes.find(
+        ({ node }: MALNode) =>
+            simpleTitle(node.title) === apName &&
+            typeAPtoMAL(animeAP.type).includes(node.media_type.toLowerCase()) &&
+            (node.status === 'currently_airing' ||
+                animeAP.total_eps === node.num_episodes.toString()),
+    )
 
-            if (anime) {
+    if (onlyTitle) {
+        return onlyTitle
+    }
+
+    return animes.find(
+        ({ node }: MALNode) =>
+            (simpleTitle(node.title) === apName ||
+                node.alternative_titles.synonyms
+                    .map((synonym) => simpleTitle(synonym))
+                    .includes(apName) ||
+                simpleTitle(node.alternative_titles.en) === apName ||
+                apAltTitles.includes(simpleTitle(node.title)) ||
+                apAltTitles.includes(simpleTitle(node.alternative_titles.en)) ||
+                apAltTitles.some((altTitle) =>
+                    node.alternative_titles.synonyms
+                        .map((synonym) => simpleTitle(synonym))
+                        .includes(altTitle),
+                )) &&
+            typeAPtoMAL(animeAP.type).includes(node.media_type.toLowerCase()) &&
+            (node.status === 'currently_airing' ||
+                animeAP.total_eps === node.num_episodes.toString()),
+    )
+}
+
+export async function getAnimeMAL(
+    animeAP: AnimeAP,
+): Promise<AnimeMAL | undefined> {
+    const animeDb = await getAnimeByAP(animeAP.id)
+
+    if (animeDb) {
+        const anime = await getAnimeInfo(animeDb.malId)
+        if (anime.main_picture === undefined) {
+            return undefined
+        }
+        return {
+            id: animeDb.malId,
+            title: anime.title,
+            image: anime.main_picture.medium,
+        }
+    }
+
+    const foundAnime: AnimeMAL | undefined = await getAnimesByTitle(
+        animeAP.title,
+    )
+        .then((animes) => {
+            const fAnime = checkForMatch(animeAP, animes)
+            if (fAnime) {
                 return {
-                    id: anime.node.id,
-                    title: anime.node.title,
-                    image: anime.node.main_picture.medium,
+                    id: fAnime.node.id,
+                    title: fAnime.node.title,
+                    image: fAnime.node.main_picture.medium,
                 }
             }
-
-            const animeElem = await fetch(
-                'https://myanimelist.net/search/prefix.json?type=anime&fields=alternative_titles&keyword=' +
-                    apAnime.title +
-                    '&v=1',
-            )
-                .then((res) => {
-                    return res.json()
-                })
-                .then((data) => {
-                    const animeElem: {
-                        id: number
-                        name: string
-                        thumbnail_url: string
-                    } = data.categories[0].items.find(
-                        (element: {
-                            id: number
-                            name: string
-                            thumbnail_url: string
-                            payload: {
-                                start_year: number
-                                media_type: string
-                            }
-                        }) =>
-                            (simpleTitle(element.name) === animeName ||
-                                animeAltTitles.includes(
-                                    simpleTitle(element.name),
-                                )) &&
-                            typeAPtoMAL(apAnime.type).includes(
-                                element.payload.media_type.toLowerCase(),
-                            ),
-                    )
-
-                    return animeElem
-                })
-
-            if (animeElem) {
-                return {
-                    id: animeElem.id,
-                    title: animeElem.name,
-                    image: animeElem.thumbnail_url,
-                }
-            }
-
-            anime = data.data.find(
-                (element: MALNode) =>
-                    element.node.start_season != undefined &&
-                    apAnime.year != '0' &&
-                    element.node.start_season.year === parseInt(apAnime.year) &&
-                    apAnime.total_eps != '0' &&
-                    element.node.num_episodes === parseInt(apAnime.total_eps) &&
-                    typeAPtoMAL(apAnime.type).includes(
-                        element.node.media_type.toLowerCase(),
-                    ),
-            )
-
-            if (anime) {
-                return {
-                    id: anime.node.id,
-                    title: anime.node.title,
-                    image: anime.node.main_picture.medium,
-                }
-            }
-
             return undefined
         })
         .catch((err) => {
             console.log(
-                'Error in MAL getting ' + apAnime.title + ' with error ' + err,
+                'Error in MAL getting ' + animeAP.title + ' with error ' + err,
             )
             return undefined
         })
 
-    if (anime != undefined) {
-        await createAnime(apAnime.id, anime.id)
+    if (foundAnime) {
+        const animeDb = await getAnimeByMAL(foundAnime.id)
+        if (!animeDb) {
+            await createAnime(animeAP.id, animeAP.title, foundAnime.id)
+        } else {
+            console.log('Error creating anime in db ' + animeAP.title)
+            console.log(
+                'Anime already in db: id=' +
+                    animeDb.id +
+                    ' mal=' +
+                    animeDb.malId,
+            )
+        }
+
+        return {
+            id: foundAnime.id,
+            title: foundAnime.title,
+            image: foundAnime.image,
+        }
     }
 
-    return anime
+    return undefined
 }
 
 function simpleTitle(title: string) {

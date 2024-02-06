@@ -20,6 +20,7 @@ model User {
 
 model Anime {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  ap Int @unique
-  mal Int @unique
+  apId Int @unique
+  apTitle String
+  malId Int @unique
 }

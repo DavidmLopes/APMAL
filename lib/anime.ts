@@ -1,15 +1,17 @@
 import type { Anime } from '@prisma/client'
 import prisma from './prisma'
 
-export async function createAnime(apId: number, malId: number) {
-    console.log(
-        'Creating anime with apId: ' + apId + ' and malId: ' + malId + '.',
-    )
+export async function createAnime(
+    apId: number,
+    apTitle: string,
+    malId: number,
+) {
     try {
         return await prisma.anime.create({
             data: {
-                ap: apId,
-                mal: malId,
+                apId: apId,
+                apTitle: apTitle,
+                malId: malId,
             },
         })
     } catch (error) {
@@ -24,7 +26,21 @@ export async function getAnimeByAP(apId: number): Promise<Anime | null> {
     }
     try {
         return await prisma.anime.findUnique({
-            where: { ap: apId },
+            where: { apId: apId },
+        })
+    } catch (error) {
+        console.log(error)
+        throw new Error('Error getting anime')
+    }
+}
+
+export async function getAnimeByMAL(malId: number): Promise<Anime | null> {
+    if (!malId) {
+        return null
+    }
+    try {
+        return await prisma.anime.findUnique({
+            where: { malId: malId },
         })
     } catch (error) {
         console.log(error)
