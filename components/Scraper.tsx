@@ -4,12 +4,12 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { getAnimes, getAnimesMal } from './actions'
 import { AnimeAP } from '@/lib/ap'
-import { AnimeMAL, isSameStatus } from '@/lib/mal'
+import { SimpleAnimeMAL, isSameStatus } from '@/lib/mal'
 import { useState } from 'react'
 
 export type Anime = {
     ap: AnimeAP
-    mal: AnimeMAL | undefined
+    mal: SimpleAnimeMAL | undefined
 }
 
 export default function Scraper({

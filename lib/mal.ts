@@ -29,6 +29,14 @@ export type AnimeMAL = {
     id: number
     title: string
     image: string
+    status: string
+    num_episodes_watched: number
+}
+
+export type SimpleAnimeMAL = {
+    id: number
+    title: string
+    image: string
 }
 
 function typeAPtoMAL(apType: string) {
@@ -137,7 +145,7 @@ function checkForMatch(animeAP: AnimeAP, animes: Array<MALNode>) {
 
 export async function getAnimeMAL(
     animeAP: AnimeAP,
-): Promise<AnimeMAL | undefined> {
+): Promise<SimpleAnimeMAL | undefined> {
     const animeDb = await getAnimeByAP(animeAP.id)
 
     if (animeDb) {
@@ -152,7 +160,7 @@ export async function getAnimeMAL(
         }
     }
 
-    const foundAnime: AnimeMAL | undefined = await getAnimesByTitle(
+    const foundAnime: SimpleAnimeMAL | undefined = await getAnimesByTitle(
         animeAP.title,
     )
         .then((animes) => {
@@ -208,15 +216,10 @@ type MALStatus = {
     }
 }
 
-export type AnimeStatusMAL = {
-    status: string
-    num_episodes_watched: number
-}
-
 export async function getUserAnimes(
     access_token: string,
     next: string = '',
-): Promise<Array<AnimeMAL & AnimeStatusMAL>> {
+): Promise<Array<AnimeMAL>> {
     return await fetch(
         next
             ? next
@@ -241,7 +244,7 @@ export async function getUserAnimes(
                 return []
             }
 
-            const animes: Array<AnimeMAL & AnimeStatusMAL> = data.data.map(
+            const animes: Array<AnimeMAL> = data.data.map(
                 (anime: MALNode & MALStatus) => {
                     return {
                         id: anime.node.id,

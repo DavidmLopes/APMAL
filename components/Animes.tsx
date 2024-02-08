@@ -2,7 +2,7 @@ import { AnimeAP, AnimeStatus } from '@/lib/ap'
 import { AspectRatio } from './ui/aspect-ratio'
 import { Card, CardContent, CardFooter, CardTitle } from './ui/card'
 import Image from 'next/image'
-import { AnimeMAL } from '@/lib/mal'
+import { SimpleAnimeMAL } from '@/lib/mal'
 import {
     Dialog,
     DialogDescription,
@@ -17,7 +17,7 @@ import { Button } from './ui/button'
 
 type Anime = {
     ap: AnimeAP
-    mal: AnimeMAL | undefined
+    mal: SimpleAnimeMAL | undefined
 }
 
 function statusToColor(status: AnimeStatus | undefined) {
