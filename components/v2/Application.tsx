@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Animes from './Animes'
 import SearchAnimes from './SearchAnimes'
 import UpdateAnimesButton from './UpdateAnimesButton'
 import { AnimeAPMAL, AnimeAPMALInfo } from './types'
 import { isSameStatus } from '@/lib/mal'
 
-function difAnimes(animes: Array<AnimeAPMAL>) {
+function getDifAnimes(animes: Array<AnimeAPMAL>) {
     return animes.filter(
         (anime) =>
             anime.info === AnimeAPMALInfo.FOUND ||
@@ -27,24 +27,50 @@ function difAnimes(animes: Array<AnimeAPMAL>) {
 export default function Application({ disable }: { disable: boolean }) {
     const [animes, setAnimes] = useState<Array<AnimeAPMAL>>([])
 
+    const [difAnimes, setDifAnimes] = useState<Array<AnimeAPMAL>>([])
+    const [notFoundAnimes, setNotFoundAnimes] = useState<Array<AnimeAPMAL>>([])
+
+    useEffect(() => {
+        setDifAnimes(getDifAnimes(animes))
+        setNotFoundAnimes(
+            animes.filter((anime) => anime.info === AnimeAPMALInfo.NOT_FOUND),
+        )
+    }, [animes])
+
     return (
         <div className="mx-auto max-w-screen-xl p-2">
             <SearchAnimes disable={disable} setAnimes={setAnimes} />
+            <MissingOnMAL animes={difAnimes} />
+            <NotFound animes={notFoundAnimes} />
+        </div>
+    )
+}
+
+function MissingOnMAL({ animes }: { animes: Array<AnimeAPMAL> }) {
+    if (animes.length === 0) return null
+
+    return (
+        <>
             <div className="flex items-center">
                 <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                     Missing on MAL
                 </h3>
                 <UpdateAnimesButton />
             </div>
-            <Animes animes={difAnimes(animes)} />
+            <Animes animes={animes} />
+        </>
+    )
+}
+
+function NotFound({ animes }: { animes: Array<AnimeAPMAL> }) {
+    if (animes.length === 0) return null
+
+    return (
+        <>
             <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                 NotFound
             </h3>
-            <Animes
-                animes={animes.filter(
-                    (anime) => anime.info === AnimeAPMALInfo.NOT_FOUND,
-                )}
-            />
-        </div>
+            <Animes animes={animes} />
+        </>
     )
 }

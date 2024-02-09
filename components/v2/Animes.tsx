@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimeAPMAL } from './types'
+import { AnimeAPMAL, AnimeAPMALInfo } from './types'
 import {
     Dialog,
     DialogDescription,
@@ -64,7 +64,11 @@ export default function Animes({ animes }: { animes: Array<AnimeAPMAL> }) {
                     </CardContent>
                     <CardFooter className="h-full flex-col justify-between">
                         <div className="mb-2 text-center">{anime.ap.title}</div>
-                        <MoreInfo anime={anime} />
+                        {anime.info !== AnimeAPMALInfo.NOT_FOUND ? (
+                            <SeeDifs anime={anime} />
+                        ) : (
+                            <SetAnime anime={anime} />
+                        )}
                     </CardFooter>
                 </Card>
             ))}
@@ -72,7 +76,11 @@ export default function Animes({ animes }: { animes: Array<AnimeAPMAL> }) {
     )
 }
 
-function MoreInfo({ anime }: { anime: AnimeAPMAL }) {
+function Bold({ children }: { children: React.ReactNode }) {
+    return <span className="font-bold">{children}</span>
+}
+
+function SeeDifs({ anime }: { anime: AnimeAPMAL }) {
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -82,7 +90,7 @@ function MoreInfo({ anime }: { anime: AnimeAPMAL }) {
             </DialogTrigger>
             <DialogContent className="">
                 <DialogHeader>
-                    <DialogTitle>Info</DialogTitle>
+                    <DialogTitle>Differents</DialogTitle>
                     <DialogDescription>
                         More details about differences
                     </DialogDescription>
@@ -100,12 +108,17 @@ function MoreInfo({ anime }: { anime: AnimeAPMAL }) {
                                 sizes="100%" //Need to optimze this
                             />
                         </AspectRatio>
-                        <div className="mt-2">Id: {anime.ap.id}</div>
-                        <div>Name: {anime.ap.title}</div>
-                        <div>Status: {anime.ap.status}</div>
+                        <div>
+                            <Bold>Name:</Bold> {anime.ap.title}
+                        </div>
+                        <div>
+                            <Bold>Status:</Bold> {anime.ap.status}
+                        </div>
                         {anime.ap.eps_watched != undefined &&
                             anime.ap.eps_watched != '' && (
-                                <div>Eps: {anime.ap.eps_watched}</div>
+                                <div>
+                                    <Bold>Eps:</Bold> {anime.ap.eps_watched}
+                                </div>
                             )}
                     </div>
                     <div className="text-center">{'<- ->'}</div>
@@ -124,8 +137,24 @@ function MoreInfo({ anime }: { anime: AnimeAPMAL }) {
                                     sizes="100%" //Need to optimze this
                                 />
                             </AspectRatio>
-                            <div className="mt-2">Id: {anime.mal.id}</div>
-                            <div>Name: {anime.mal?.title}</div>
+                            <div>
+                                <Bold>Name:</Bold> {anime.mal?.title}
+                            </div>
+                            {'status' in anime.mal &&
+                                anime.mal.status != undefined && (
+                                    <div>
+                                        <Bold>Status:</Bold> {anime.mal?.status}
+                                    </div>
+                                )}
+                            {'num_episodes_watched' in anime.mal &&
+                                anime.ap.eps_watched !== '' &&
+                                Number(anime.ap.eps_watched) !==
+                                    anime.mal?.num_episodes_watched && (
+                                    <div>
+                                        <Bold>Eps:</Bold>{' '}
+                                        {anime.mal?.num_episodes_watched}
+                                    </div>
+                                )}
                         </div>
                     )}
                 </div>
@@ -136,5 +165,13 @@ function MoreInfo({ anime }: { anime: AnimeAPMAL }) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    )
+}
+
+function SetAnime({ anime }: { anime: AnimeAPMAL }) {
+    return (
+        <Button className="w-full" variant="outline">
+            Set Anime
+        </Button>
     )
 }
