@@ -4,7 +4,25 @@ import { useState } from 'react'
 import Animes from './Animes'
 import SearchAnimes from './SearchAnimes'
 import UpdateAnimesButton from './UpdateAnimesButton'
-import { AnimeAPMAL } from './types'
+import { AnimeAPMAL, AnimeAPMALInfo } from './types'
+import { isSameStatus } from '@/lib/mal'
+
+function difAnimes(animes: Array<AnimeAPMAL>) {
+    return animes.filter(
+        (anime) =>
+            anime.info === AnimeAPMALInfo.FOUND ||
+            (anime.info === AnimeAPMALInfo.USER_HAVE &&
+                anime.mal != undefined &&
+                'status' in anime.mal &&
+                !isSameStatus(anime.ap.status, anime.mal?.status)) ||
+            (anime.info === AnimeAPMALInfo.USER_HAVE &&
+                anime.mal != undefined &&
+                'num_episodes_watched' in anime.mal &&
+                anime.ap.eps_watched !== '' &&
+                Number(anime.ap.eps_watched) !==
+                    anime.mal?.num_episodes_watched),
+    )
+}
 
 export default function Application({ disable }: { disable: boolean }) {
     const [animes, setAnimes] = useState<Array<AnimeAPMAL>>([])
@@ -18,11 +36,15 @@ export default function Application({ disable }: { disable: boolean }) {
                 </h3>
                 <UpdateAnimesButton />
             </div>
-            <Animes />
+            <Animes animes={difAnimes(animes)} />
             <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                 NotFound
             </h3>
-            <Animes />
+            <Animes
+                animes={animes.filter(
+                    (anime) => anime.info === AnimeAPMALInfo.NOT_FOUND,
+                )}
+            />
         </div>
     )
 }
