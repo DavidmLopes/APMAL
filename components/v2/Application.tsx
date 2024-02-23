@@ -40,13 +40,19 @@ export default function Application({ disable }: { disable: boolean }) {
     return (
         <div className="mx-auto max-w-screen-xl p-2">
             <SearchAnimes disable={disable} setAnimes={setAnimes} />
-            <MissingOnMAL animes={difAnimes} />
+            <MissingOnMAL animes={difAnimes} updateAnimes={setDifAnimes} />
             <NotFound animes={notFoundAnimes} />
         </div>
     )
 }
 
-function MissingOnMAL({ animes }: { animes: Array<AnimeAPMAL> }) {
+function MissingOnMAL({
+    animes,
+    updateAnimes,
+}: {
+    animes: Array<AnimeAPMAL>
+    updateAnimes: (animes: Array<AnimeAPMAL>) => void
+}) {
     if (animes.length === 0) return null
 
     return (
@@ -55,7 +61,7 @@ function MissingOnMAL({ animes }: { animes: Array<AnimeAPMAL> }) {
                 <h3 className="m-4 scroll-m-20 text-4xl font-semibold tracking-tight">
                     Missing on MAL
                 </h3>
-                <UpdateAnimesButton />
+                <UpdateAnimesButton animes={animes} update={updateAnimes} />
             </div>
             <Animes animes={animes} />
         </>
