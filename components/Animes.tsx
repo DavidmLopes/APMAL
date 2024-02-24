@@ -1,8 +1,6 @@
-import { AnimeAP, AnimeStatus } from '@/lib/ap'
-import { AspectRatio } from './ui/aspect-ratio'
-import { Card, CardContent, CardFooter, CardTitle } from './ui/card'
-import Image from 'next/image'
-import { AnimeMAL } from '@/lib/mal'
+'use client'
+
+import { AnimeAPMAL, AnimeAPMALInfo } from './types'
 import {
     Dialog,
     DialogDescription,
@@ -14,11 +12,10 @@ import {
     DialogClose,
 } from './ui/dialog'
 import { Button } from './ui/button'
-
-type Anime = {
-    ap: AnimeAP
-    mal: AnimeMAL | undefined
-}
+import { AspectRatio } from './ui/aspect-ratio'
+import { Card, CardContent, CardFooter, CardTitle } from './ui/card'
+import Image from 'next/image'
+import { AnimeStatus } from '@/lib/ap'
 
 function statusToColor(status: AnimeStatus | undefined) {
     switch (status) {
@@ -37,7 +34,7 @@ function statusToColor(status: AnimeStatus | undefined) {
     }
 }
 
-export default function Animes({ animes }: { animes: Array<Anime> }) {
+export default function Animes({ animes }: { animes: Array<AnimeAPMAL> }) {
     return (
         <div className="mx-auto grid max-w-screen-xl grid-cols-2 gap-2 p-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {animes.map((anime) => (
@@ -67,88 +64,114 @@ export default function Animes({ animes }: { animes: Array<Anime> }) {
                     </CardContent>
                     <CardFooter className="h-full flex-col justify-between">
                         <div className="mb-2 text-center">{anime.ap.title}</div>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button className="w-full" variant="outline">
-                                    More Info
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="">
-                                <DialogHeader>
-                                    <DialogTitle>Info</DialogTitle>
-                                    <DialogDescription>
-                                        More details about differences
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid grid-cols-5">
-                                    <div className="col-span-2">
-                                        <div className="mb-2 font-bold">
-                                            AnimePlanet
-                                        </div>
-                                        <AspectRatio ratio={4 / 6}>
-                                            <Image
-                                                src={anime.ap.image}
-                                                alt={
-                                                    'Image of ' + anime.ap.title
-                                                }
-                                                fill
-                                                style={{ objectFit: 'cover' }}
-                                                className="rounded-md"
-                                                sizes="100%" //Need to optimze this
-                                            />
-                                        </AspectRatio>
-                                        <div className="mt-2">
-                                            Id: {anime.ap.id}
-                                        </div>
-                                        <div>Name: {anime.ap.title}</div>
-                                        <div>Status: {anime.ap.status}</div>
-                                        {anime.ap.eps_watched != undefined &&
-                                            anime.ap.eps_watched != '' && (
-                                                <div>
-                                                    Eps: {anime.ap.eps_watched}
-                                                </div>
-                                            )}
-                                    </div>
-                                    <div className="text-center">{'<- ->'}</div>
-                                    {anime.mal != undefined && (
-                                        <div className="col-span-2">
-                                            <div className="mb-2 font-bold">
-                                                MyAnimeList
-                                            </div>
-                                            <AspectRatio ratio={4 / 6}>
-                                                <Image
-                                                    src={anime.mal.image}
-                                                    alt={
-                                                        'Image of ' +
-                                                        anime.mal.title
-                                                    }
-                                                    fill
-                                                    style={{
-                                                        objectFit: 'cover',
-                                                    }}
-                                                    className="rounded-md"
-                                                    sizes="100%" //Need to optimze this
-                                                />
-                                            </AspectRatio>
-                                            <div className="mt-2">
-                                                Id: {anime.mal.id}
-                                            </div>
-                                            <div>Name: {anime.mal?.title}</div>
-                                        </div>
-                                    )}
-                                </div>
-                                <DialogFooter>
-                                    <DialogClose className="w-full">
-                                        <Button className="w-full">
-                                            Close
-                                        </Button>
-                                    </DialogClose>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        {anime.info !== AnimeAPMALInfo.NOT_FOUND ? (
+                            <SeeDifs anime={anime} />
+                        ) : (
+                            <SetAnime />
+                        )}
                     </CardFooter>
                 </Card>
             ))}
         </div>
+    )
+}
+
+function Bold({ children }: { children: React.ReactNode }) {
+    return <span className="font-bold">{children}</span>
+}
+
+function SeeDifs({ anime }: { anime: AnimeAPMAL }) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button className="w-full" variant="outline">
+                    More Info
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="">
+                <DialogHeader>
+                    <DialogTitle>Differents</DialogTitle>
+                    <DialogDescription>
+                        More details about differences
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-5">
+                    <div className="col-span-2">
+                        <div className="mb-2 font-bold">AnimePlanet</div>
+                        <AspectRatio ratio={4 / 6}>
+                            <Image
+                                src={anime.ap.image}
+                                alt={'Image of ' + anime.ap.title}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className="rounded-md"
+                                sizes="100%" //Need to optimze this
+                            />
+                        </AspectRatio>
+                        <div>
+                            <Bold>Name:</Bold> {anime.ap.title}
+                        </div>
+                        <div>
+                            <Bold>Status:</Bold> {anime.ap.status}
+                        </div>
+                        {anime.ap.eps_watched != undefined &&
+                            anime.ap.eps_watched != '' && (
+                                <div>
+                                    <Bold>Eps:</Bold> {anime.ap.eps_watched}
+                                </div>
+                            )}
+                    </div>
+                    <div className="text-center">{'<- ->'}</div>
+                    {anime.mal != undefined && (
+                        <div className="col-span-2">
+                            <div className="mb-2 font-bold">MyAnimeList</div>
+                            <AspectRatio ratio={4 / 6}>
+                                <Image
+                                    src={anime.mal.image}
+                                    alt={'Image of ' + anime.mal.title}
+                                    fill
+                                    style={{
+                                        objectFit: 'cover',
+                                    }}
+                                    className="rounded-md"
+                                    sizes="100%" //Need to optimze this
+                                />
+                            </AspectRatio>
+                            <div>
+                                <Bold>Name:</Bold> {anime.mal?.title}
+                            </div>
+                            {'status' in anime.mal &&
+                                anime.mal.status != undefined && (
+                                    <div>
+                                        <Bold>Status:</Bold> {anime.mal?.status}
+                                    </div>
+                                )}
+                            {'num_episodes_watched' in anime.mal &&
+                                anime.ap.eps_watched !== '' &&
+                                Number(anime.ap.eps_watched) !==
+                                    anime.mal?.num_episodes_watched && (
+                                    <div>
+                                        <Bold>Eps:</Bold>{' '}
+                                        {anime.mal?.num_episodes_watched}
+                                    </div>
+                                )}
+                        </div>
+                    )}
+                </div>
+                <DialogFooter>
+                    <DialogClose className="w-full">
+                        <Button className="w-full">Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function SetAnime() {
+    return (
+        <Button className="w-full" variant="outline">
+            Set Anime
+        </Button>
     )
 }

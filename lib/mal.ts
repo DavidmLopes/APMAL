@@ -1,4 +1,3 @@
-import { Anime } from '@/components/Scraper'
 import { AnimeAP, AnimeStatus } from './ap'
 import { createAnime, getAnimeByAP, getAnimeByMAL } from './anime'
 
@@ -26,6 +25,14 @@ type MALNode = {
 }
 
 export type AnimeMAL = {
+    id: number
+    title: string
+    image: string
+    status: string
+    num_episodes_watched: number
+}
+
+export type SimpleAnimeMAL = {
     id: number
     title: string
     image: string
@@ -137,7 +144,7 @@ function checkForMatch(animeAP: AnimeAP, animes: Array<MALNode>) {
 
 export async function getAnimeMAL(
     animeAP: AnimeAP,
-): Promise<AnimeMAL | undefined> {
+): Promise<SimpleAnimeMAL | undefined> {
     const animeDb = await getAnimeByAP(animeAP.id)
 
     if (animeDb) {
@@ -152,7 +159,7 @@ export async function getAnimeMAL(
         }
     }
 
-    const foundAnime: AnimeMAL | undefined = await getAnimesByTitle(
+    const foundAnime: SimpleAnimeMAL | undefined = await getAnimesByTitle(
         animeAP.title,
     )
         .then((animes) => {
@@ -208,15 +215,10 @@ type MALStatus = {
     }
 }
 
-export type AnimeStatusMAL = {
-    status: string
-    num_episodes_watched: number
-}
-
 export async function getUserAnimes(
     access_token: string,
     next: string = '',
-): Promise<Array<AnimeMAL & AnimeStatusMAL>> {
+): Promise<Array<AnimeMAL>> {
     return await fetch(
         next
             ? next
@@ -241,7 +243,7 @@ export async function getUserAnimes(
                 return []
             }
 
-            const animes: Array<AnimeMAL & AnimeStatusMAL> = data.data.map(
+            const animes: Array<AnimeMAL> = data.data.map(
                 (anime: MALNode & MALStatus) => {
                     return {
                         id: anime.node.id,
@@ -310,57 +312,49 @@ export function toStatusMAL(apStatus: AnimeStatus) {
 
 export async function updateAnimeStatus(
     access_token: string,
-    animes: Array<Anime>,
-): Promise<Array<Anime>> {
-    const promises = animes.map((anime) => {
-        if (anime.mal === undefined) {
-            return anime
+    malId: number,
+    newStatus: AnimeStatus,
+    epsWatched?: number,
+): Promise<boolean> {
+    const statusChanges = new URLSearchParams({
+        status: toStatusMAL(newStatus),
+    })
+
+    if (newStatus === AnimeStatus.WATCHED) {
+        statusChanges.append('num_watched_episodes', '9999')
+    }
+
+    if (newStatus != AnimeStatus.WANT_TO_WATCH) {
+        if (!epsWatched) {
+            return false
         }
+        statusChanges.append('num_watched_episodes', epsWatched.toString())
+    }
 
-        const statusChanges = new URLSearchParams({
-            status: toStatusMAL(anime.ap.status),
-        })
-
-        if (anime.ap.status === AnimeStatus.WATCHED) {
-            statusChanges.append('num_watched_episodes', '9999')
-        }
-
-        if (anime.ap.status != AnimeStatus.WANT_TO_WATCH) {
-            statusChanges.append(
-                'num_watched_episodes',
-                anime.ap.eps_watched.toString(),
-            )
-        }
-
-        return fetch(
-            'https://api.myanimelist.net/v2/anime/' +
-                anime.mal.id +
-                '/my_list_status',
-            {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${access_token}`,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: statusChanges,
+    return await fetch(
+        'https://api.myanimelist.net/v2/anime/' + malId + '/my_list_status',
+        {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-        )
-            .then((res) => {
-                if (res.status === 200) {
-                    return null
-                }
-                return anime
-            })
-            .catch((err) => {
-                console.log(
-                    'Error in updateAnimeStatus with error ' + err + ' and ',
-                    anime,
-                )
-                return anime
-            })
-    })
-
-    return await Promise.all(promises).then((results) => {
-        return results.filter((result) => result != null) as Array<Anime>
-    })
+            body: statusChanges,
+        },
+    )
+        .then((res) => {
+            if (res.status === 200) {
+                return true
+            }
+            return false
+        })
+        .catch((err) => {
+            console.log(
+                'Error in updateAnimeStatus with error ' +
+                    err +
+                    ' and MalID' +
+                    malId,
+            )
+            return false
+        })
 }
