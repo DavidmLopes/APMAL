@@ -37,7 +37,7 @@ export default async function Home() {
                 </div>
             </div>
             <div className="mx-auto max-w-screen-xl p-2">
-                <Application available={user != null} />
+                <Application disable={user === null} />
             </div>
         </div>
     )
