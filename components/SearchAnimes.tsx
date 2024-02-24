@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
 import { getUserAnimesAP, getUserAnimesMAL, mapAPtoMAL } from './actions'
 import { AnimeAPMAL, AnimeAPMALInfo } from './types'
 

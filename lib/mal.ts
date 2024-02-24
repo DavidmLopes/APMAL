@@ -1,6 +1,5 @@
 import { AnimeAP, AnimeStatus } from './ap'
 import { createAnime, getAnimeByAP, getAnimeByMAL } from './anime'
-import { Anime } from '@/components/Scraper'
 
 type MALAnimeDetails = {
     id: number
@@ -312,63 +311,6 @@ export function toStatusMAL(apStatus: AnimeStatus) {
 }
 
 export async function updateAnimeStatus(
-    access_token: string,
-    animes: Array<Anime>,
-): Promise<Array<Anime>> {
-    const promises = animes.map((anime) => {
-        if (anime.mal === undefined) {
-            return anime
-        }
-
-        const statusChanges = new URLSearchParams({
-            status: toStatusMAL(anime.ap.status),
-        })
-
-        if (anime.ap.status === AnimeStatus.WATCHED) {
-            statusChanges.append('num_watched_episodes', '9999')
-        }
-
-        if (anime.ap.status != AnimeStatus.WANT_TO_WATCH) {
-            statusChanges.append(
-                'num_watched_episodes',
-                anime.ap.eps_watched.toString(),
-            )
-        }
-
-        return fetch(
-            'https://api.myanimelist.net/v2/anime/' +
-                anime.mal.id +
-                '/my_list_status',
-            {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${access_token}`,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: statusChanges,
-            },
-        )
-            .then((res) => {
-                if (res.status === 200) {
-                    return null
-                }
-                return anime
-            })
-            .catch((err) => {
-                console.log(
-                    'Error in updateAnimeStatus with error ' + err + ' and ',
-                    anime,
-                )
-                return anime
-            })
-    })
-
-    return await Promise.all(promises).then((results) => {
-        return results.filter((result) => result != null) as Array<Anime>
-    })
-}
-
-export async function updateAnimeStatusV2(
     access_token: string,
     malId: number,
     newStatus: AnimeStatus,
