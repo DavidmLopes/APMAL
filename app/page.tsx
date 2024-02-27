@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default async function Home() {
     return (
         <div className="flex flex-col items-center gap-4 px-4 py-16 text-center md:px-6">
-            <div className="flex w-11/12 items-center gap-4 sm:w-2/3 md:w-1/2">
+            <div className="flex w-11/12 max-w-[600px] items-center gap-4 sm:w-2/3">
                 <div className="relative aspect-square w-full">
                     <Image
                         alt="Hero"
@@ -15,7 +15,7 @@ export default async function Home() {
                         fill
                     />
                 </div>
-                <RefreshCw className="h-full w-1/2" strokeWidth={3} />
+                <RefreshCw className="h-full w-1/2 stroke-[2.5]" />
                 <div className="relative aspect-square w-full ">
                     <Image
                         alt="Hero"
@@ -25,10 +25,10 @@ export default async function Home() {
                     />
                 </div>
             </div>
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
                 Sync Your Anime Lists
             </h1>
-            <p className="px-8 text-center text-gray-500 md:text-xl dark:text-gray-400">
+            <p className="px-8 text-center text-neutral-500 sm:text-xl dark:text-neutral-400">
                 Manage your anime watchlist across platforms with ease
             </p>
             <Button>
